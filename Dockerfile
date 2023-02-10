@@ -1,21 +1,11 @@
-FROM debian
+FROM alpine
 
 MAINTAINER Ezequiel Cardinali <ecardinali@gmail.com>
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        cron \
-        curl \
-        ca-certificates \
-        git \
-        && rm -rf /var/lib/apt/lists/*
-
+RUN apk add --no-cache curl git bash
 
 COPY bin/rancher /usr/local/bin/
 COPY bin/rancher-compose /usr/local/bin/
-COPY ./entry_point.sh /
+COPY bin/rancher-backup /usr/local/bin/
 
-RUN git clone http://github.com/nikitux/ranchervm.git ~/.ranchervm
-ENV PATH="${PATH}:~/.ranchervm/bin"
-
-CMD ["/entry_point.sh"]
-
+CMD ["crond", "-f", "-l", "8", "-L", "/dev/stdout"]

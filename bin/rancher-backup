@@ -1,0 +1,39 @@
+#!/bin/bash
+
+export PATH="/opt/chef/embedded/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/root/.ranchervm/bin"
+
+repo_path="${BKP_PATH:-/tmp}"
+rancher_files_path="${repo_path}/rancher"
+rancher_config_path="${CONFIG_PATH:-/config}"
+rancher_envs="$(cd ${rancher_config_path} && ls -1)"
+pid_file="/tmp/rancher_backup.pid"
+git_enable="${GIT_ENABLED:-0}"
+
+[ -f ${pid_file} ] && exit 1
+
+echo $$ > ${pid_file}
+cd ${repo_path}
+for rancher_env in ${rancher_envs}; do
+  echo "Swithing to Rancher ${rancher_env}"
+  source ${rancher_config_path}/${rancher_env}/config
+  for r_env in $(rancher env --format '{{.Environment.Name}}' | grep -Ev 'env7|env8' || continue); do
+    echo "Backing up hosts labels for ${r_env}"
+    mkdir -p "${rancher_files_path}/${rancher_env}/${r_env}/hosts"
+    for env_host in $(rancher --env ${r_env} hosts --format '{{.Host.Hostname}}|{{.Labels}}' || continue); do
+      IFS="|" read host_name host_labels <<< ${env_host}
+      echo "${host_labels}" | sed 's/,/\n/g' | sort > "${rancher_files_path}/${rancher_env}/${r_env}/hosts/${host_name}.labels"
+    done
+    for r_stack in $(rancher --env ${r_env} stack ls --format '{{.Stack.Name}}' || continue); do
+      echo "Backup for ${rancher_env} / ${r_env} / ${r_stack} ..."
+      rancher --env ${r_env} export -f - ${r_stack} | tar xv -C ${rancher_files_path}/${rancher_env}/${r_env}
+    done
+  done
+done
+if [ ${git_enable} == 1 ]; then
+  cd "${rancher_files_path}"
+  git pull
+  git add .
+  git commit  -m "Update configs rancher configs"
+  git push
+fi
+rm -f ${pid_file}
