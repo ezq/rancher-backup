@@ -3,7 +3,7 @@ set -e
 
 export PATH="/opt/chef/embedded/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/root/.ranchervm/bin"
 
-repo_path="${BKP_PATH:-/tmp}"
+repo_path="${BKP_PATH:-/backup}"
 rancher_files_path="${repo_path}/rancher"
 rancher_config_path="${CONFIG_PATH}"
 pid_file="/tmp/rancher_backup.pid"
