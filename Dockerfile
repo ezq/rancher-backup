@@ -2,7 +2,7 @@ FROM alpine
 
 MAINTAINER Ezequiel Cardinali <ecardinali@gmail.com>
 
-RUN apk add --no-cache curl git bash
+RUN apk add --no-cache curl git bash openssh-client
 
 COPY bin/rancher /usr/local/bin/
 COPY bin/rancher-compose /usr/local/bin/
