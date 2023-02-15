@@ -11,6 +11,8 @@ git_enable="${GIT_ENABLED:-0}"
 
 [ -f ${pid_file} ] && exit 1
 
+chown -R ${USER}:${USER} ${repo_path}
+
 take_rancher_backup() {
   for r_env in $(rancher env --format '{{.Environment.Name}}' | grep -Ev 'env7|env8' || continue); do
     echo "Backing up hosts labels for ${r_env}"
