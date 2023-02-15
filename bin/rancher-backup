@@ -22,8 +22,8 @@ take_rancher_backup() {
       echo "${host_labels}" | sed 's/,/\n/g' | sort > "${rancher_files_path}/${rancher_site}/${r_env}/hosts/${host_name}.labels"
     done
     for r_stack in $(rancher --env ${r_env} stack ls --format '{{.Stack.Name}}' || continue); do
-      echo "Backup for ${rancher_site} / ${r_env} / ${r_stack} ..."
-      rancher --env ${r_env} export -f - ${r_stack} | tar xv -C ${rancher_files_path}/${rancher_site}/${r_env}
+      echo "Backup for ${rancher_site} > ${r_env} > ${r_stack}"
+      rancher --env ${r_env} export -f - ${r_stack} | tar x -C ${rancher_files_path}/${rancher_site}/${r_env}
     done
   done
 }
