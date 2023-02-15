@@ -44,6 +44,6 @@ To save backups outside the container, you can use a volume. To do this, run the
 docker run --name rancher-backup -v ./config:/config -v ./backup:/backup -e BKP_PATH=/backup -d rancher-backup
 ```
 
-This way, the backups will be saved in the `/backup` path outside the container.
+This way, the backups will be saved in the `./backup` path outside the container. You can set `BKP_PATH` to a directory of your choice by default its `/backup`.
 
 That's it! If you have any suggestions or issues, please open an issue.
