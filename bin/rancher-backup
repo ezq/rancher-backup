@@ -50,6 +50,7 @@ else
   done
 fi
 
+rm -f ${pid_file}
 echo "++++++++++ BACKUP FINISHED ++++++++++"
 if [ ${git_enable} == 1 ]; then
   config_github
@@ -60,4 +61,3 @@ if [ ${git_enable} == 1 ]; then
   git commit  -m "Update configs rancher configs"
   git push
 fi
-rm -f ${pid_file}
