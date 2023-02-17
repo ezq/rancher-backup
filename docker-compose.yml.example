@@ -1,3 +1,4 @@
+version: '3'
 services:
   rancher-backup:
     image: ecardinali/rancher-backup:latest
