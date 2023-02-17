@@ -1,5 +1,10 @@
 # rancher-backup
 This repository contains a Docker container based on Alpine Linux that runs a Bash script to backup docker-compose.yml and rancher-compose.yml files every 1 hour from one or more Rancher 1.6 servers.
+You can use it running:
+
+```bash
+ docker run --name rancher-backup -e RANCHER_SITE=test -e RANCHER_URL=[URL] -e RANCHER_ACCESS_KEY=[ACCESS KEY] -e RANCHER_SECRET_KEY=[SECRET KEY] -d ecardinali/rancher-backup:latest
+```
 
 ## Building
 To build the container, clone the repository and run the following commands:
