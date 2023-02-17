@@ -1,0 +1,18 @@
+services:
+  rancher-backup:
+    image: ecardinali/rancher-backup:latest
+    environment:
+      - BKP_PATH=/backup
+      - RANCHER_SITE=[NAME]
+      - RANCHER_URL=[URL]
+      - RANCHER_ACCESS_KEY=[KEY]
+      - RANCHER_SECRET_KEY=[SECRET]
+      - GIT_ENABLED=1
+      - GITHUB_NAME=[GIT USER]
+      - GITHUB_EMAIL=[GIT EMAIL]
+      - CONFIG_PATH=/config
+    volumes:
+      - ./ssh_key/id_rsa:/root/.ssh/id_rsa:ro
+      - ./backup:/backup
+      - ./config:/config
+
