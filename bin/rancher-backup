@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-export PATH="/opt/chef/embedded/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/root/.ranchervm/bin"
-
 repo_path="${BKP_PATH:-/backup}"
 rancher_files_path="${repo_path}/rancher"
 rancher_config_path="${CONFIG_PATH}"
@@ -10,8 +8,6 @@ pid_file="/tmp/rancher_backup.pid"
 git_enable="${GIT_ENABLED:-0}"
 
 [ -f ${pid_file} ] && exit 1
-
-chown -R ${USER}:${USER} ${repo_path}
 
 take_rancher_backup() {
   for r_env in $(rancher env --format '{{.Environment.Name}}' | grep -Ev 'env7|env8' || continue); do
@@ -28,28 +24,40 @@ take_rancher_backup() {
   done
 }
 
+config_github() {
+  if ! [[ -f ${HOME}/.gitconfig ]]; then
+    [[ -z ${GITHUB_EMAIL} || -z ${GITHUB_NAME} ]] && exit 1
+    git config --global user.name ${GITHUB_NAME}
+    git config --global user.email ${GITHUB_EMAIL}
+    git config --global --add safe.directory ${BKP_PATH}
+    ssh-keyscan -t rsa github.com >> ${HOME}/.ssh/known_hosts
+  fi
+}
+
 echo $$ > ${pid_file}
 cd ${repo_path}
 
 if [ -z ${rancher_config_path} ]; then
-  [ -z "${RANCHER_URL}" ] || [ -z "${RANCHER_SITE}" ] || [ -z ${RANCHER_ACCESS_KEY} ] || [ -z ${RANCHER_SECRET_KEY} ] && exit 1
-  rancher_site="${RANCHER_SITE}"
+  [[ -z ${RANCHER_URL} || -z ${RANCHER_SITE} || -z ${RANCHER_ACCESS_KEY} || -z ${RANCHER_SECRET_KEY} ]] && exit 1
+  rancher_site=${RANCHER_SITE}
   take_rancher_backup
 else
-  rancher_sites="$(cd ${rancher_config_path} && ls -1)"
+  rancher_sites=$(cd ${rancher_config_path} && ls -1)
   for rancher_site in ${rancher_sites}; do 
     echo "Swithing to Rancher ${rancher_site}"
     source ${rancher_config_path}/${rancher_site}/config
     take_rancher_backup
   done
 fi
+
+echo "++++++++++ BACKUP FINISHED ++++++++++"
 if [ ${git_enable} == 1 ]; then
+  config_github
+  echo "++++++++++ PUSHING TO GITHUB ++++++++++"
   cd "${rancher_files_path}"
-  ssh-keyscan -t rsa github.com >> ${HOME}/.ssh/known_hosts
   git pull
   git add .
   git commit  -m "Update configs rancher configs"
   git push
 fi
-echo "++++++++++ BACKUP FINISHED ++++++++++"
 rm -f ${pid_file}
